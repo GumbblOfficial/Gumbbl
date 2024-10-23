@@ -3,27 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUMBBL - Juego</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        h1 {
-            margin-top: 50px;
-            font-size: 48px;
-        }
-        p {
-            font-size: 24px;
-        }
-    </style>
+    <title>El Tablero de Desafío</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Bienvenido al Juego</h1>
-    <p>Aquí es donde comenzará tu aventura en GUMBBL.</p>
-    <!-- Aquí puedes insertar el contenido del juego -->
+    <div class="container">
+        <h1>Selecciona tu casilla</h1>
+        <div class="board">
+            <button class="square" data-id="1">Casilla 1</button>
+            <button class="square" data-id="2">Casilla 2</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
 </body>
 </html>
+
 
