@@ -18,63 +18,35 @@ body {
   background-size: 200px;
 }
 
-.casino-title {
-  font-size: 3.5rem;
-  color: #ffd700;
-  text-shadow: 0 0 15px #ffd700, 0 0 30px #ff00ff;
-  margin-bottom: 40px;
-}
-
-/* Main Screen */
-.main-screen button {
-  padding: 15px 40px;
-  font-size: 1.2rem;
+.bet-selection-screen button {
+  padding: 10px 20px;
+  margin: 5px;
   background: linear-gradient(45deg, #ff00ff, #ffd700);
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 0 20px #ff00ff;
+}
+
+.main-screen {
+  padding: 20px;
+}
+
+.choice-buttons button {
+  padding: 10px 20px;
   margin: 10px;
+  background: #444;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
 }
 
-.menu {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-/* Matchmaking Screen */
-.matchmaking-screen {
-  font-size: 2rem;
-  color: #ffd700;
-  text-shadow: 0 0 10px #ffd700;
-}
-
-.chip-animation {
-  font-size: 3rem;
-}
-
-/* Betting Screen */
 .betting-screen {
   background: rgba(0, 0, 0, 0.8);
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 0 25px #ffd700;
-}
-
-.pot {
-  font-size: 2rem;
-  color: #ffd700;
-  text-shadow: 0 0 15px #ffd700;
-  margin-bottom: 20px;
-}
-
-.player-zone {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
 }
 
 .player-card {
@@ -84,79 +56,53 @@ body {
   box-shadow: 0 0 15px #ff00ff;
 }
 
-.player-card h3 {
-  color: #ff00ff;
-  text-shadow: 0 0 5px #ff00ff;
-}
-
 input[type="range"] {
   width: 200px;
   margin: 10px;
   accent-color: #ffd700;
 }
 
-.average-display {
-  font-size: 1.2rem;
-  color: #fff;
-  margin-bottom: 20px;
-}
-
-.confirm-button {
-  padding: 15px 40px;
-  font-size: 1.2rem;
-  background: linear-gradient(45deg, #ff00ff, #ffd700);
-  border: none;
+.coinflip-field {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  margin: 20px auto;
+  border: 2px dashed #ffd700;
   border-radius: 10px;
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 0 20px #ff00ff;
 }
 
-/* Flipping Screen */
+.trajectory-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  border-top: 2px dashed #fff;
+  transform-origin: left;
+  transform: rotate(-45deg);
+}
+
+.coin-start {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 2rem;
+}
+
 .flipping-screen {
   position: relative;
   height: 400px;
 }
 
-.countdown {
-  font-size: 5rem;
-  color: #ffd700;
-  text-shadow: 0 0 20px #ffd700;
-}
-
 .coin {
-  font-size: 6rem;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  color: #ffd700;
-  text-shadow: 0 0 25px #ffd700, 0 0 50px #ff00ff;
-  filter: blur(1px);
 }
 
-/* Result Screen */
 .result-screen {
   background: rgba(0, 0, 0, 0.8);
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 0 25px #ffd700;
-}
-
-.result-screen.win {
-  background: rgba(255, 215, 0, 0.2);
-}
-
-.result-screen.lose {
-  filter: brightness(0.8);
-  animation: vibrate 0.3s;
-}
-
-@keyframes vibrate {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
 }
 
 .confetti {
@@ -168,10 +114,6 @@ input[type="range"] {
   height: 100%;
 }
 
-.prize-distribution p {
-  font-size: 1.2rem;
-}
-
 .play-again-button {
   padding: 15px 40px;
   font-size: 1.2rem;
@@ -181,5 +123,4 @@ input[type="range"] {
   color: #fff;
   cursor: pointer;
   box-shadow: 0 0 20px #ff00ff;
-  margin-top: 20px;
 }
