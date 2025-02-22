@@ -3,69 +3,106 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
 function App() {
-  const [gameState, setGameState] = useState('main'); // main, matchmaking, betting, flipping, result
-  const [player1, setPlayer1] = useState({ height: 50, distance: 50 });
-  const [player2, setPlayer2] = useState({ height: 50, distance: 50 });
-  const [averageHeight, setAverageHeight] = useState(50);
-  const [averageDistance, setAverageDistance] = useState(50);
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [result, setResult] = useState(null); // null, {coinResult, winner}
-  const [countdown, setCountdown] = useState(3);
+  const [gameState, setGameState] = useState('bet-selection'); // Estados: bet-selection, main, betting, flipping, result
+  const [betAmount, setBetAmount] = useState(null); // Cantidad apostada
+  const [playerChoice, setPlayerChoice] = useState(null); // 'Heads' o 'Tails'
+  const [botChoice, setBotChoice] = useState(null); // Elección del bot
+  const [playerParams, setPlayerParams] = useState({ height: 50, distance: 50 }); // Parámetros del jugador
+  const [botParams, setBotParams] = useState({ height: 50, distance: 50 }); // Parámetros del bot
+  const [isFlipping, setIsFlipping] = useState(false); // Estado de lanzamiento
+  const [result, setResult] = useState(null); // Resultado: {coinResult, winner}
+  const [trajectory, setTrajectory] = useState({ x: 0, y: 0 }); // Trayectoria visual
 
-  // Update averages when sliders change
-  const updateAverages = () => {
-    setAverageHeight((player1.height + player2.height) / 2);
-    setAverageDistance((player1.distance + player2.distance) / 2);
+  // Opciones de apuesta
+  const betOptions = [1, 5, 10, 20, 50, 100, 200, 500, 1000];
+
+  // Actualizar la trayectoria visual según los parámetros del jugador
+  useEffect(() => {
+    const x = (playerParams.distance / 100) * 300; // Máximo 300px
+    const y = -(playerParams.height / 100) * 200; // Máximo 200px hacia arriba
+    setTrajectory({ x, y });
+  }, [playerParams]);
+
+  // Seleccionar apuesta
+  const selectBet = (amount) => {
+    setBetAmount(amount);
+    setGameState('main');
   };
 
-  // Handle "Join a Match" click
-  const joinMatch = () => {
-    setGameState('matchmaking');
-    setTimeout(() => setGameState('betting'), 3000); // Simulates opponent found in 3s
+  // Elegir Cara o Cruz
+  const chooseSide = (side) => {
+    setPlayerChoice(side);
+    setBotChoice(side === 'Heads' ? 'Tails' : 'Heads');
+    setGameState('betting');
   };
 
-  // Confirm parameters and start countdown
-  const confirmParameters = () => {
-    setGameState('flipping');
-    let timer = 3;
-    const countdownInterval = setInterval(() => {
-      setCountdown(timer);
-      timer -= 1;
-      if (timer < 0) {
-        clearInterval(countdownInterval);
-        startFlip();
-      }
-    }, 1000);
+  // Generar parámetros aleatorios para el bot
+  const generateBotParams = () => {
+    const height = Math.floor(Math.random() * 100) + 1;
+    const distance = Math.floor(Math.random() * 100) + 1;
+    setBotParams({ height, distance });
   };
 
-  // Simulate coin flip with physics-based animation
+  // Iniciar el lanzamiento
   const startFlip = () => {
+    generateBotParams();
     setIsFlipping(true);
-    const spins = Math.max(1, Math.floor(averageHeight / 20)); // More height = more spins
-    const bounces = Math.floor(averageDistance / 33); // More distance = more bounces
+    setGameState('flipping');
+    const avgHeight = (playerParams.height + botParams.height) / 2;
+    const avgDistance = (playerParams.distance + botParams.distance) / 2;
+    const spins = Math.max(1, Math.floor(avgHeight / 20)); // Giros según altura
+    const bounces = Math.floor(avgDistance / 33); // Rebotes según distancia
     setTimeout(() => {
       const coinResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
-      const winner = coinResult === 'Heads' ? 'Player 1' : 'Player 2';
+      const winner = coinResult === playerChoice ? 'You' : 'Bot';
       setResult({ coinResult, winner, spins, bounces });
       setIsFlipping(false);
       setGameState('result');
-    }, 3000 + spins * 500); // Animation duration scales with spins
+    }, 3000 + spins * 500); // Duración de la animación
   };
 
-  // Reset game for "Play Again"
+  // Reiniciar el juego
   const playAgain = () => {
-    setGameState('betting');
+    setGameState('bet-selection');
+    setBetAmount(null);
+    setPlayerChoice(null);
+    setBotChoice(null);
+    setPlayerParams({ height: 50, distance: 50 });
+    setBotParams({ height: 50, distance: 50 });
     setResult(null);
-    setPlayer1({ height: 50, distance: 50 });
-    setPlayer2({ height: 50, distance: 50 });
-    setAverageHeight(50);
-    setAverageDistance(50);
+    setTrajectory({ x: 0, y: 0 });
   };
 
   return (
     <div className="casino-app">
       <AnimatePresence>
-        {/* Main Screen */}
+        {/* Pantalla de Selección de Apuesta */}
+        {gameState === 'bet-selection' && (
+          <motion.div
+            key="bet-selection"
+            className="bet-selection-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2>Selecciona tu apuesta</h2>
+            <div className="bet-options">
+              {betOptions.map((amount) => (
+                <motion.button
+                  key={amount}
+                  onClick={() => selectBet(amount)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  ${amount}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Pantalla Principal: Elegir Cara o Cruz */}
         {gameState === 'main' && (
           <motion.div
             key="main"
@@ -75,46 +112,21 @@ function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="casino-title">Crypto Coinflip Royale</h1>
-            <motion.button
-              className="join-button"
-              onClick={joinMatch}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{ scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 1.5 } }}
-            >
-              Join a Match
-            </motion.button>
-            <div className="menu">
-              <button>Match History</button>
-              <button>Profile</button>
-              <button>Settings</button>
-              <button>Withdraw Funds</button>
+            <h1>Crypto Coinflip Royale</h1>
+            <h3>Apuesta: ${betAmount}</h3>
+            <p>Elige tu lado:</p>
+            <div className="choice-buttons">
+              <motion.button onClick={() => chooseSide('Heads')} whileHover={{ scale: 1.05 }}>
+                Cara (Heads)
+              </motion.button>
+              <motion.button onClick={() => chooseSide('Tails')} whileHover={{ scale: 1.05 }}>
+                Cruz (Tails)
+              </motion.button>
             </div>
           </motion.div>
         )}
 
-        {/* Matchmaking Screen */}
-        {gameState === 'matchmaking' && (
-          <motion.div
-            key="matchmaking"
-            className="matchmaking-screen"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2>Finding Opponent...</h2>
-            <motion.div
-              className="chip-animation"
-              animate={{ x: [-50, 50, -50], transition: { repeat: Infinity, duration: 2 } }}
-            >
-              💸💸💸
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Betting Screen */}
+        {/* Pantalla de Parámetros */}
         {gameState === 'betting' && (
           <motion.div
             key="betting"
@@ -124,92 +136,50 @@ function App() {
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2>Betting Table</h2>
-            <motion.div
-              className="pot"
-              animate={{ scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 2 } }}
-            >
-              💰 $20 Pot
-            </motion.div>
+            <h2>Ajusta tu lanzamiento</h2>
             <div className="player-zone">
               <div className="player-card">
-                <h3>Player 1</h3>
+                <h3>Tú ({playerChoice})</h3>
                 <label>
-                  Height
+                  Altura
                   <input
                     type="range"
                     min="1"
                     max="100"
-                    value={player1.height}
-                    onChange={(e) => {
-                      setPlayer1({ ...player1, height: Number(e.target.value) });
-                      updateAverages();
-                    }}
+                    value={playerParams.height}
+                    onChange={(e) => setPlayerParams({ ...playerParams, height: Number(e.target.value) })}
                   />
-                  <span>{player1.height}</span>
+                  <span>{playerParams.height}</span>
                 </label>
                 <label>
-                  Distance
+                  Distancia
                   <input
                     type="range"
                     min="1"
                     max="100"
-                    value={player1.distance}
-                    onChange={(e) => {
-                      setPlayer1({ ...player1, distance: Number(e.target.value) });
-                      updateAverages();
-                    }}
+                    value={playerParams.distance}
+                    onChange={(e) => setPlayerParams({ ...playerParams, distance: Number(e.target.value) })}
                   />
-                  <span>{player1.distance}</span>
-                </label>
-              </div>
-              <div className="player-card">
-                <h3>Player 2</h3>
-                <label>
-                  Height
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={player2.height}
-                    onChange={(e) => {
-                      setPlayer2({ ...player2, height: Number(e.target.value) });
-                      updateAverages();
-                    }}
-                  />
-                  <span>{player2.height}</span>
-                </label>
-                <label>
-                  Distance
-                  <input
-                    type="range"
-                    min="1"
-                    max="100"
-                    value={player2.distance}
-                    onChange={(e) => {
-                      setPlayer2({ ...player2, distance: Number(e.target.value) });
-                      updateAverages();
-                    }}
-                  />
-                  <span>{player2.distance}</span>
+                  <span>{playerParams.distance}</span>
                 </label>
               </div>
             </div>
-            <div className="average-display">
-              Avg Height: {averageHeight.toFixed(1)} | Avg Distance: {averageDistance.toFixed(1)}
+            <div className="coinflip-field">
+              <div className="trajectory-line" style={{ width: `${trajectory.x}px`, height: `${Math.abs(trajectory.y)}px` }} />
+              <div className="coin-start">🪙</div>
             </div>
             <motion.button
               className="confirm-button"
-              onClick={confirmParameters}
+              onClick={startFlip}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Confirm & Flip
+              Lanzar moneda
             </motion.button>
           </motion.div>
         )}
 
-        {/* Flipping Screen */}
+        {/* Pantalla de Lanzamiento */}
         {gameState === 'flipping' && (
           <motion.div
             key="flipping"
@@ -219,51 +189,42 @@ function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {countdown > 0 ? (
-              <motion.h2
-                className="countdown"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {countdown}
-              </motion.h2>
-            ) : (
-              <>
-                <h2>Let’s Flip the Coin!</h2>
-                <motion.div
-                  className="coin"
-                  animate={{
-                    y: [0, -150, 0, -50, 0], // Coin rises and falls
-                    rotate: 360 * Math.max(1, Math.floor(averageHeight / 20)), // Spins based on height
-                    transition: { duration: 3 + Math.floor(averageHeight / 20) * 0.5, ease: 'easeInOut' },
-                  }}
-                >
-                  💰
-                </motion.div>
-              </>
-            )}
+            <h2>¡Lanzando la moneda!</h2>
+            <motion.div
+              className="coin"
+              animate={{
+                y: [0, -150, 0, -50, 0], // Movimiento vertical
+                x: [0, 100, 0], // Movimiento horizontal
+                rotate: 360 * Math.max(1, Math.floor((playerParams.height + botParams.height) / 40)), // Giros
+                transition: { duration: 3 + Math.floor((playerParams.height + botParams.height) / 40) * 0.5, ease: 'easeInOut' },
+              }}
+            >
+              <svg width="50" height="50" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="#ffd700" stroke="#000" strokeWidth="4" />
+                <text x="50" y="55" textAnchor="middle" fontSize="24" fill="#000">{result?.coinResult || 'H'}</text>
+              </svg>
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Result Screen */}
+        {/* Pantalla de Resultado */}
         {gameState === 'result' && result && (
           <motion.div
             key="result"
-            className={`result-screen ${result.winner === 'Player 1' ? 'win' : 'lose'}`}
+            className={`result-screen ${result.winner === 'You' ? 'win' : 'lose'}`}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2>{result.winner} Wins!</h2>
-            <p>Result: {result.coinResult}</p>
-            <p>Spins: {result.spins} | Bounces: {result.bounces}</p>
+            <h2>¡{result.winner === 'You' ? 'Tú' : 'Bot'} ganas!</h2>
+            <p>Resultado: {result.coinResult === 'Heads' ? 'Cara' : 'Cruz'}</p>
+            <p>Giros: {result.spins} | Rebotes: {result.bounces}</p>
             <div className="prize-distribution">
-              <p>Winner получает $19</p>
-              <p>House takes $1</p>
+              <p>Ganador recibe: ${betAmount * 1.9}</p>
+              <p>Casa se lleva: ${betAmount * 0.1}</p>
             </div>
-            {result.winner === 'Player 1' && (
+            {result.winner === 'You' && (
               <motion.div
                 className="confetti"
                 animate={{ opacity: [0, 1, 0], transition: { duration: 2, repeat: Infinity } }}
@@ -276,9 +237,8 @@ function App() {
               onClick={playAgain}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              animate={{ scale: [1, 1.05, 1], transition: { repeat: Infinity, duration: 1.5 } }}
             >
-              Play Again
+              Jugar de nuevo
             </motion.button>
           </motion.div>
         )}
