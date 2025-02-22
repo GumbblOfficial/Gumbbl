@@ -1,37 +1,82 @@
-.App {
-  text-align: center;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #1a1a1a, #2c003e);
+  min-height: 100vh;
+  font-family: 'Orbitron', sans-serif;
 }
-.player-inputs {
+
+.casino-app {
+  text-align: center;
+  padding: 40px;
+  color: #fff;
+}
+
+.casino-title {
+  font-size: 3rem;
+  text-transform: uppercase;
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700, 0 0 20px #ff00ff;
+  margin-bottom: 40px;
+}
+
+.player-zone {
   display: flex;
   justify-content: space-around;
-  margin: 20px 0;
+  margin-bottom: 40px;
 }
+
+.player-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  width: 300px;
+}
+
+.player-card h2 {
+  color: #ff00ff;
+  text-shadow: 0 0 5px #ff00ff;
+}
+
 label {
   display: block;
-  margin: 10px 0;
+  margin: 15px 0;
+  font-size: 1.1rem;
+  color: #fff;
 }
+
 input {
   margin-left: 10px;
-  padding: 5px;
-  width: 60px;
-}
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  padding: 8px;
+  width: 80px;
   border: none;
   border-radius: 5px;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+}
+
+input:disabled {
+  opacity: 0.5;
+}
+
+.action-zone {
+  margin-bottom: 40px;
+}
+
+.casino-button {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  background: linear-gradient(45deg, #ff00ff, #ffd700);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
   cursor: pointer;
+  box-shadow: 0 0 15px #ff00ff;
 }
-button:hover {
-  background-color: #0056b3;
-}
-.result {
-  margin-top: 20px;
-}
-h3 {
-  color: #28a745;
-}
+
+.casino-button:disabled {
+  background: #555;
+  curso
