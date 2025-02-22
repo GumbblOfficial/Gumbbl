@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import coinHeads from './assets/coin-heads.png'; // Imagen para "cara"
+import coinTails from './assets/coin-tails.png'; // Imagen para "cruz"
 import './App.css';
+
+const GRAVITY = 9.8; // m/s²
+const SCALE_FACTOR = 10; // Escala para convertir metros a píxeles
 
 function App() {
   const [gameState, setGameState] = useState('bet-selection'); // Estados: bet-selection, main, betting, flipping, result
@@ -11,16 +16,30 @@ function App() {
   const [botParams, setBotParams] = useState({ height: 50, distance: 50 }); // Parámetros del bot
   const [isFlipping, setIsFlipping] = useState(false); // Estado de lanzamiento
   const [result, setResult] = useState(null); // Resultado: {coinResult, winner}
-  const [trajectory, setTrajectory] = useState({ x: 0, y: 0 }); // Trayectoria visual
+  const [trajectory, setTrajectory] = useState([]); // Puntos de la trayectoria para la línea discontinua
+  const [finalTrajectory, setFinalTrajectory] = useState([]); // Trayectoria final para el lanzamiento
 
   // Opciones de apuesta
   const betOptions = [1, 5, 10, 20, 50, 100, 200, 500, 1000];
 
+  // Calcular la trayectoria parabólica basada en parámetros
+  const calculateTrajectory = (params) => {
+    const vy = (params.height / 100) * 20; // Velocidad inicial en Y (m/s)
+    const vx = (params.distance / 100) * 10; // Velocidad inicial en X (m/s)
+    const tTotal = (2 * vy) / GRAVITY; // Tiempo total de vuelo
+    const points = [];
+    for (let t = 0; t <= tTotal; t += 0.1) {
+      const x = vx * t * SCALE_FACTOR;
+      const y = (vy * t - 0.5 * GRAVITY * t * t) * SCALE_FACTOR;
+      points.push({ x, y: -y }); // Invertir Y para que suba en la pantalla
+    }
+    return points;
+  };
+
   // Actualizar la trayectoria visual según los parámetros del jugador
   useEffect(() => {
-    const x = (playerParams.distance / 100) * 300; // Máximo 300px
-    const y = -(playerParams.height / 100) * 200; // Máximo 200px hacia arriba
-    setTrajectory({ x, y });
+    const points = calculateTrajectory(playerParams);
+    setTrajectory(points);
   }, [playerParams]);
 
   // Seleccionar apuesta
@@ -43,22 +62,28 @@ function App() {
     setBotParams({ height, distance });
   };
 
+  // Calcular la trayectoria final basada en la media de parámetros
+  const calculateFinalTrajectory = () => {
+    const avgHeight = (playerParams.height + botParams.height) / 2;
+    const avgDistance = (playerParams.distance + botParams.distance) / 2;
+    const avgParams = { height: avgHeight, distance: avgDistance };
+    const points = calculateTrajectory(avgParams);
+    setFinalTrajectory(points);
+  };
+
   // Iniciar el lanzamiento
   const startFlip = () => {
     generateBotParams();
+    calculateFinalTrajectory();
     setIsFlipping(true);
     setGameState('flipping');
-    const avgHeight = (playerParams.height + botParams.height) / 2;
-    const avgDistance = (playerParams.distance + botParams.distance) / 2;
-    const spins = Math.max(1, Math.floor(avgHeight / 20)); // Giros según altura
-    const bounces = Math.floor(avgDistance / 33); // Rebotes según distancia
     setTimeout(() => {
       const coinResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
       const winner = coinResult === playerChoice ? 'You' : 'Bot';
-      setResult({ coinResult, winner, spins, bounces });
+      setResult({ coinResult, winner });
       setIsFlipping(false);
       setGameState('result');
-    }, 3000 + spins * 500); // Duración de la animación
+    }, 3000); // Duración fija para simplificar
   };
 
   // Reiniciar el juego
@@ -70,7 +95,8 @@ function App() {
     setPlayerParams({ height: 50, distance: 50 });
     setBotParams({ height: 50, distance: 50 });
     setResult(null);
-    setTrajectory({ x: 0, y: 0 });
+    setTrajectory([]);
+    setFinalTrajectory([]);
   };
 
   return (
@@ -165,7 +191,14 @@ function App() {
               </div>
             </div>
             <div className="coinflip-field">
-              <div className="trajectory-line" style={{ width: `${trajectory.x}px`, height: `${Math.abs(trajectory.y)}px` }} />
+              <svg className="trajectory-svg">
+                <polyline
+                  points={trajectory.map((p) => `${p.x},${p.y}`).join(' ')}
+                  fill="none"
+                  stroke="white"
+                  strokeDasharray="5,5"
+                />
+              </svg>
               <div className="coin-start">🪙</div>
             </div>
             <motion.button
@@ -190,20 +223,17 @@ function App() {
             transition={{ duration: 0.5 }}
           >
             <h2>¡Lanzando la moneda!</h2>
-            <motion.div
+            <motion.img
+              src={coinHeads}
+              alt="Coin"
               className="coin"
               animate={{
-                y: [0, -150, 0, -50, 0], // Movimiento vertical
-                x: [0, 100, 0], // Movimiento horizontal
-                rotate: 360 * Math.max(1, Math.floor((playerParams.height + botParams.height) / 40)), // Giros
-                transition: { duration: 3 + Math.floor((playerParams.height + botParams.height) / 40) * 0.5, ease: 'easeInOut' },
+                x: finalTrajectory.map((p) => p.x),
+                y: finalTrajectory.map((p) => p.y),
+                rotate: [0, 360 * 5], // Giros durante el vuelo
               }}
-            >
-              <svg width="50" height="50" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="#ffd700" stroke="#000" strokeWidth="4" />
-                <text x="50" y="55" textAnchor="middle" fontSize="24" fill="#000">{result?.coinResult || 'H'}</text>
-              </svg>
-            </motion.div>
+              transition={{ duration: 3, ease: 'easeInOut' }}
+            />
           </motion.div>
         )}
 
@@ -219,7 +249,6 @@ function App() {
           >
             <h2>¡{result.winner === 'You' ? 'Tú' : 'Bot'} ganas!</h2>
             <p>Resultado: {result.coinResult === 'Heads' ? 'Cara' : 'Cruz'}</p>
-            <p>Giros: {result.spins} | Rebotes: {result.bounces}</p>
             <div className="prize-distribution">
               <p>Ganador recibe: ${betAmount * 1.9}</p>
               <p>Casa se lleva: ${betAmount * 0.1}</p>
